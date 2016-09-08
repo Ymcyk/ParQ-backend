@@ -1,3 +1,6 @@
 # Python
 __pycache__/
 *.py[cod]
+
+# tymczasowa baza danych w SQLite
+db.sqlite3
