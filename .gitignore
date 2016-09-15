@@ -4,3 +4,6 @@ __pycache__/
 
 # tymczasowa baza danych w SQLite
 db.sqlite3
+
+# tymczasowe pliki vim-a
+*.swp
