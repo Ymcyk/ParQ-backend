@@ -1,11 +1,9 @@
-from django.db import models
 from django.contrib.auth.models import User
 
-from .managers import ParkingUserManager
+from .managers import RoleUserManager
 
-class ParkingUser(User):
-
-    objects = ParkingUserManager
+class RoleUser(User):
+    objects = RoleUserManager()
 
     class Meta:
         proxy = True
