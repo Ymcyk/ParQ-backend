@@ -6,6 +6,7 @@ syncrules - command which creates groups based on defined here rules.
             all will be replaced with existing in this file.
 """
 
+# rezygnuję z tego pomysłu, fixtures robi to samo
 Driver = {
     'verbose': 'Kierowca',
     'permissions': (
@@ -19,3 +20,8 @@ Officer = {
         # tu uprawnienia
     ),
 }
+
+def assign_role(user, role):
+    """
+    
+    """
