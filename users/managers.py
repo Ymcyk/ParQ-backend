@@ -12,11 +12,7 @@ class RoleUserManager(UserManager):
         """
         Create user and give him role
         """
-        if isinstance(role, str):
-            role = self._get_role(role)
-        elif not isinstance(role, Role):
-            raise TypeError('Unkown type {} given at role argument'.
-                    format(type(role)))
+        role = self._get_role(role) if isinstance(role, str) else role
         user = super(type(self), self).create_user(*args, **kwargs)
         role.give_role(user)
         return user
