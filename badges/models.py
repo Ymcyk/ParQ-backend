@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import User
 from django.utils.translation import ugettext as _
 
 from django_countries.fields import CountryField
@@ -10,7 +11,7 @@ class Vehicle(models.Model):
     DEFAULT_COUNTRY = 'PL'
 
     owner = models.ForeignKey(
-            'User',
+            User,
             verbose_name=_('Vehicle\'s owner'),
             on_delete=models.CASCADE,
             # limit_choices_to={},
