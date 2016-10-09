@@ -19,6 +19,7 @@ class Vehicle(models.Model):
     name = models.CharField(
             _('Name'),
             max_length=50,
+            blank=True,
             )
     plate_country = CountryField(
             _('Plate country'),
@@ -30,8 +31,8 @@ class Vehicle(models.Model):
             )
 
     def __str__(self):
-        return "{}: {}{}".format(self.name, self.plate_country, 
-                self.plate_number)
+        plate_str = '{}-{}'.format(self.plate_country, self.plate_number)
+        return '{} {}'.format(self.name, plate_str) if self.name else plate_str 
 
     def __eq__(self, other):
         """
