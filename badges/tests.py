@@ -25,34 +25,49 @@ class VehicleTest(TestCase):
         self.assertEqual(self.badge, ret_badge, msg='Vehicle with another ' 
                 'badge')
 
-    def test_badge_deactivated_after_vehicle_deletion(self):
+    def test_badge_unassigned_on_create(self):
         '''
-        Deleting related vehicle should unset is_active in Badge object
+        is_assigned should be False (not assigned) on create.
+        '''
+        # prepare
+        # do
+        badge = Badge.objects.create()
+        # check
+        self.assertFalse(badge.is_assigned, msg='Badge assigned on create.')
+
+    def test_badge_assigned_after_vehicle_save(self):
+        '''
+        is_assigned set to True after vehicle save
+        '''
+        # prepare
+        # do
+        # check
+        after_badge = Badge.objects.get(id=self.badge.id)
+        self.assertTrue(after_badge.is_assigned, ('Badge after vehicle save'
+            ' not changed to True'))
+
+    def test_cant_assign_to_assigned_badge(self):
+        # prepare
+        # do
+        # check
+        from badges.exceptions import BadgeNotAvailable
+        with self.assertRaises(BadgeNotAvailable, msg=('Asigning vehicle to'
+            ' assigned badge didn\'t raise Error')):
+            Vehicle.objects.create(owner=self.user, badge=self.badge,
+                    plate_country='PL', plate_number='ZS1234F')
+
+    def test_cant_assign_after_vehicle_delete(self):
+        '''
+        Badge can be used only once. Even after related vehicle delete can't
+        be reused
         '''
         # prepare
         # do
         self.vehicle.delete()
-        #check
-        after_badge = Badge.objects.get(id=self.badge.id)
-        self.assertFalse(after_badge.is_active, ('Deletion of related vehicle'
-            ' did not set is_active to False'))
-
-    def test_badge_cant_have_many_vehicles(self):
-        '''
-        Assigned badge can't be assigned to other vehicle
-        '''
-        # prepare
-        # do
         # check
-        from django.db.utils import IntegrityError
-        with self.assertRaises(IntegrityError, msg=('Second vehicle didn\'t' 
-            ' rise Error')):
-            vehicle2 = Vehicle.objects.create(owner=self.user, badge=self.badge, 
-                       plate_country='PL', plate_number='PO123FU')
-
-    def test_cant_assign_to_deactivated_badge(self):
-        # prepare
-        # do
-        # check
-        pass
+        from badges.exceptions import BadgeNotAvailable
+        with self.assertRaises(BadgeNotAvailable, msg=('Can assign after'
+            ' vehicle deletion')):
+            Vehicle.objects.create(owner=self.user, badge=self.badge,
+                    plate_country='PL', plate_number='ZS1234F')
 
