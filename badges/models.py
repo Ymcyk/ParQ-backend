@@ -1,5 +1,5 @@
 import uuid
-from django.db import models
+from django.db import models, IntegrityError
 from django.contrib.auth.models import User
 from django.utils.translation import ugettext as _
 
@@ -9,19 +9,16 @@ from .exceptions import BadgeNotAvailable
 
 class Badge(models.Model):
     """
-    Randomly generated unique ID. Used to register user's vehicle with 
-    scanned plate's QR code.
-    Objects of this model shouldn't be deleted.
+    Randomly generated unique ID.
     """
     id = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True)
-    is_assigned = models.BooleanField(
-            _('is assigned'),
-            help_text=_('Default is False. True after assigment to vehicle'),
-            default=False,
-            )
-    
+
+    @property
+    def is_assigned(self):
+        return hasattr(self, 'vehicle')
+
     def __str__(self):
-        return str(self.uuid)
+        return str(self.id)
 
 class Vehicle(models.Model):
     """
@@ -59,26 +56,20 @@ class Vehicle(models.Model):
             )
 
     def save(self, *args, **kwargs):
-        if self.badge.is_assigned:
-            raise BadgeNotAvailable('Badge was assigned to vehicle')
-
-        super(Vehicle, self).save(*args, **kwargs)
+        try:
+            super(Vehicle, self).save(*args, **kwargs)
+        except IntegrityError:
+            raise BadgeNotAvailable('This badge is already assigned')
         
-        self._set_badge_assigned()
-
     def __str__(self):
         plate_str = '{}-{}'.format(self.plate_country, self.plate_number)
         return '{} {}'.format(self.name, plate_str) if self.name else plate_str 
 
     def __eq__(self, other):
         """
-        Vehicle's are equal when plate number and country is the same
+        Vehicle's are equal when plate number and country are the same
         """
         return self._is_number_eq(other) and self._is_country_eq(other)  
-
-    def _set_badge_assigned(self):
-        self.badge.is_assigned = True
-        self.badge.save()
 
     def _is_number_eq(self, other):
         return self.plate_number == other.plate_number

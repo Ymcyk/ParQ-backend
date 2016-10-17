@@ -56,17 +56,28 @@ class VehicleTest(TestCase):
             Vehicle.objects.create(owner=self.user, badge=self.badge,
                     plate_country='PL', plate_number='ZS1234F')
 
-    def test_cant_assign_after_vehicle_delete(self):
+    def test_badge_deleted_after_vehicle_deletion(self):
         '''
-        Badge can be used only once. Even after related vehicle delete can't
-        be reused
+        After vehicle delete in post_delete signal badge should be deleted
         '''
         # prepare
         # do
         self.vehicle.delete()
         # check
-        from badges.exceptions import BadgeNotAvailable
-        with self.assertRaises(BadgeNotAvailable, msg=('Can assign after'
+        with self.assertRaises(Badge.DoesNotExist, msg=('Badge exist after' 
+                'Vehicle deletion')):
+            Badge.objects.get(pk=self.badge.pk)
+
+    def test_cant_assign_after_vehicle_delete(self):
+        '''
+        Badge can be used only once. Even after related vehicle delete can't
+        be reused.
+        '''
+        # prepare
+        # do
+        self.vehicle.delete()
+        # check
+        with self.assertRaises(ValueError, msg=('Can assign after'
             ' vehicle deletion')):
             Vehicle.objects.create(owner=self.user, badge=self.badge,
                     plate_country='PL', plate_number='ZS1234F')
