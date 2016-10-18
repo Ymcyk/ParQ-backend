@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'djroles',
     'users',
+    'badges.apps.BadgesConfig',
 ]
 
 MIDDLEWARE = [
