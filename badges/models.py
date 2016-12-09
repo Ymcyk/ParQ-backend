@@ -1,17 +1,16 @@
 import uuid
 from django.db import models, IntegrityError
-from django.contrib.auth.models import User
 from django.utils.translation import ugettext as _
-
+from users.models import Driver
 from django_countries.fields import CountryField
 
 from .exceptions import BadgeNotAvailable
 
 class Badge(models.Model):
     """
-    Randomly generated unique ID.
+    Badge with auto generated uuid
     """
-    id = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True)
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False)
 
     @property
     def is_assigned(self):
@@ -27,7 +26,7 @@ class Vehicle(models.Model):
     DEFAULT_COUNTRY = 'PL'
 
     owner = models.ForeignKey(
-            User,
+            Driver,
             verbose_name=_('Vehicle\'s owner'),
             on_delete=models.CASCADE,
             editable=False,
