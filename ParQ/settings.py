@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'djroles',
+    'rest_framework',
     'users.apps.UsersConfig',
     'badges.apps.BadgesConfig',
 ]
