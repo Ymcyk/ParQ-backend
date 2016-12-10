@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'djroles',
     'rest_framework',
+    'schedule',
     'users.apps.UsersConfig',
     'badges.apps.BadgesConfig',
 ]
