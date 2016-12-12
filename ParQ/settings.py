@@ -40,8 +40,10 @@ INSTALLED_APPS = [
     'djroles',
     'rest_framework',
     'schedule',
+    'ordered_model',
     'users.apps.UsersConfig',
     'badges.apps.BadgesConfig',
+    'charges.apps.ChargesConfig',
 ]
 
 MIDDLEWARE = [
