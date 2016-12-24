@@ -1,27 +1,9 @@
+from decimal import Decimal
+
 from django.db import models
 from django.utils.translation import ugettext as _
 from schedule.models import Event
 from ordered_model.models import OrderedModel
-
-# Trzeba się zdecydować jaki typ stosować: IntegerField, czy DuratonField
-# Duration będzie dużo wygodniejszy w adminie
-
-class Tariff(models.Model):
-    cost = models.DecimalField(_('cost'),
-            max_digits=8,
-            decimal_places=2
-            )
-    minutes = models.IntegerField(_('minutes'))
-
-    def __str__(self):
-        return '{}/{}'.format(self.cost, self.minutes)
-
-    def get_tariff_per_minute(self):
-        return self.cost/self.minutes
-
-    def calculate_cost_for_time(self, time):
-        minute_tariff = self.get_tariff_per_minute()
-        return minute_tariff * time
 
 class ScheduleLot(models.Model):
     name = models.CharField(_('name'), 
@@ -36,9 +18,11 @@ class ScheduleLot(models.Model):
         return self.name
 
 class Charge(models.Model):
-    tariff = models.ForeignKey(Tariff, 
-            verbose_name=_('tariff')
+    cost = models.DecimalField(_('cost'),
+            max_digits=8,
+            decimal_places=2
             )
+    minutes = models.IntegerField(_('minutes'))
     duration = models.DurationField(_('duration'),
             blank=True
             )
@@ -46,8 +30,14 @@ class Charge(models.Model):
             default=True)
 
     def __str__(self):
-        return '{} for {}, minute_billing: {}'.format(self.tariff, 
-                self.duration, self.minute_billing)
+        return '{}/[] for {}, minute_billing: {}'.format(self.cost, 
+                self.minutes, self.duration, self.minute_billing)
+
+    def calculate_price(self, time):
+        price = Decimal()
+        price += (time // self.minutes) * self.cost
+        price += (Decimal(time % self.minutes) / self.minutes) * self.cost
+        return price
 
 class Schedule(Event):
     schedule_lot = models.ForeignKey(ScheduleLot,
