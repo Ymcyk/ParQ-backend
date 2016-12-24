@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'users.apps.UsersConfig',
     'badges.apps.BadgesConfig',
     'charges.apps.ChargesConfig',
+    'parkings.apps.ParkingsConfig',
 ]
 
 MIDDLEWARE = [
