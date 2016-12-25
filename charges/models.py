@@ -1,6 +1,8 @@
 from decimal import Decimal
+from datetime import datetime
 
 from django.db import models
+from django.utils.timezone import make_aware
 from django.utils.translation import ugettext as _
 
 from schedule.periods import Period
@@ -20,25 +22,19 @@ class ScheduleLot(models.Model):
         return self.name
 
     def calculate_price(self, ticket):
-        schedules = self._get_schedules(ticket) 
-        price = Decimal()
-        for schedule in schedules:
-            price += schedule.calculate_price(ticket)
-        return price
+        schedule = self._get_schedule(ticket) 
+        return schedule.calculate_price(ticket)
 
-    def _get_schedules(self, ticket):
+    def _get_schedule(self, ticket):
         all_schedules = list(self.schedule_set.all())
-        print('all_schedules:', all_schedules)
-        occurrences = Period(all_schedules, 
-                ticket.start, ticket.end).get_occurrences()
-        print('occurrences:', occurrences)
-        schedules = []
-        for occurr in occurrences:
-            schedule = occurr.event.schedule
-            schedule.start = occurr.start
-            schedule.end = occurr.end
-            schedules.append(schedule)
-        return schedules
+        end = ticket.end
+        end = make_aware(datetime(end.year, end.month, end.day, 23, 59))
+        occurrence = Period(all_schedules, 
+                ticket.start, end).get_occurrences()[0]
+        schedule = occurrence.event.schedule
+        schedule.start = occurrence.start
+        schedule.end = occurrence.end
+        return schedule
 
 class Charge(models.Model):
     cost = models.DecimalField(_('cost'),
