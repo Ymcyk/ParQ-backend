@@ -9,9 +9,11 @@ def assign_to_role(role_class, user):
     role.give_role(user)
 
 @receiver(post_save, sender=Driver)
-def assign_driver_to_group(instance, **kwargs):
-    assign_to_role(Driver, instance)
+def assign_driver_to_group(instance, created, **kwargs):
+    if created:
+        assign_to_role(Driver, instance)
 
 @receiver(post_save, sender=Officer)
-def assign_officer_to_group(instance, **kwargs):
-    assign_to_role(Officer, instance)
+def assign_officer_to_group(instance, created, **kwargs):
+    if created:
+        assign_to_role(Officer, instance)

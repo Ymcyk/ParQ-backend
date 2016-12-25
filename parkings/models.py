@@ -42,13 +42,14 @@ class Ticket(models.Model):
             blank=True,
             null=True
             )
-  
+    # można sprawdzać jeszcze, czy data w bilecie dotyczy tego samego dnia,
+    # chociaż problemem nie jest dzień, a grafik
     def save(self, *args, **kwargs):
         self.price = self.parking.schedule_lot.calculate_price(self)
-        self.vehicle.driver.reduce_money(self.price)
+        self.vehicle.owner.reduce_money(self.price)
 
         super(type(self), self).save(*args, **kwargs)
-        self.vehicle.driver.save()
+        self.vehicle.owner.save()
 
     def __str__(self):
         return '{}: {}'.format(self.start, self.parking)
