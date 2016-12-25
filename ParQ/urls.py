@@ -16,8 +16,22 @@ Including another URLconf
 from django.conf.urls import url, include
 from django.contrib import admin
 
+from rest_framework.urlpatterns import format_suffix_patterns
+from rest_framework.authtoken import views
+from users.views import driver_list, driver_detail 
+
 urlpatterns = [
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
-    url(r'^api/', include('api.urls')),
-    url(r'^admin/', admin.site.urls),
+    url(r'^api-token-auth/', views.obtain_auth_token),
+    url(r'^drivers/$', driver_list),
+    url(r'^drivers/(?P<pk>[0-9]+)$', driver_detail),
+    #url(r'^admin/', admin.site.urls),
 ]
+
+urlpatterns = format_suffix_patterns(urlpatterns)
+
+# logowanie, zostanie zwrócony token
+# curl --data "username=pateto&password=piotr213243" localhost:8000/api-token-auth/
+
+# żądanie GET
+# curl -i -H "Accept: application/json" "localhost:8000/drivers/"

@@ -7,16 +7,15 @@ class RoleUserManager(UserManager):
     Custom RoleUser manager.
     Responsible for assigning users to specific role.
     """
+    def assign_to_role(self, role_class, user):
+        role = Role.objects.get_for_class(role_class)
+        role.give_role(user)
 
-    def create_user_with_role(self, role, *args, **kwargs):
+    def create_role_user(self, role, *args, **kwargs):
         """
         Create user and give him role
         """
-        role = self._get_role(role) if isinstance(role, str) else role
         user = super(type(self), self).create_user(*args, **kwargs)
-        role.give_role(user)
+        self.assign_to_role(role, user)
         return user
 
-    def _get_role(self, role):
-        role = Role.objects.get(group__name=role)
-        return role
