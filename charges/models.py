@@ -2,6 +2,8 @@ from decimal import Decimal
 
 from django.db import models
 from django.utils.translation import ugettext as _
+
+from schedule.periods import Period
 from schedule.models import Event
 from ordered_model.models import OrderedModel
 
@@ -16,6 +18,27 @@ class ScheduleLot(models.Model):
 
     def __str__(self):
         return self.name
+
+    def calculate_price(self, ticket):
+        schedules = self._get_schedules(ticket) 
+        price = Decimal()
+        for schedule in schedules:
+            price += schedule.calculate_price(ticket)
+        return price
+
+    def _get_schedules(self, ticket):
+        all_schedules = list(self.schedule_set.all())
+        print('all_schedules:', all_schedules)
+        occurrences = Period(all_schedules, 
+                ticket.start, ticket.end).get_occurrences()
+        print('occurrences:', occurrences)
+        schedules = []
+        for occurr in occurrences:
+            schedule = occurr.event.schedule
+            schedule.start = occurr.start
+            schedule.end = occurr.end
+            schedules.append(schedule)
+        return schedules
 
 class Charge(models.Model):
     cost = models.DecimalField(_('cost'),

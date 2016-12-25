@@ -205,3 +205,42 @@ class SchedulePriceCalculationTest(TestCase):
         price = self.sch.calculate_price(t)
         # check
         self.assertEqual(price, Decimal('9.0'), msg='Price is wrong')
+
+from schedule.models import Rule
+
+class ScheduleLotTest(TestCase):
+    def setUp(self):
+        self.lot = ScheduleLot.objects.create(name='Strefa A')
+        self.rule = Rule.objects.create(frequency='WEEKLY', name='weekly')
+        self.s1_start = timezone.make_aware(datetime(2016, 12, 24, 8))
+        self.s1_end = timezone.make_aware(datetime(2016, 12, 24, 17))
+        self.sch1 = Schedule.objects.create(start=self.s1_start, end=self.s1_end,
+                schedule_lot=self.lot, rule=self.rule)
+        self.s2_start = timezone.make_aware(datetime(2016, 12, 25, 8))
+        self.s2_end = timezone.make_aware(datetime(2016, 12, 25, 17))
+        self.sch2 = Schedule.objects.create(start=self.s2_start, end=self.s2_end,
+                schedule_lot=self.lot, rule=self.rule)
+
+    def test_get_related_schedules(self):
+        # prepare
+        # do
+        schedules = self.lot.schedule_set.all()
+        # check
+        self.assertEqual(len(schedules), 2, msg='Wrong number of schedules')
+
+    def test_get_schedule_from_one_day(self):
+        # prepare
+        t = Ticket(self.s1_start, self.s1_start + timedelta(hours=2))
+        # do
+        schedules = self.lot._get_schedules(t)
+        # check
+        self.assertEqual(len(schedules), 1, msg='Wrong number of schedules')
+
+    def test_get_schedule_from_week_parking(self):
+        # prepare
+        t = Ticket(self.s1_start, self.s1_start + timedelta(hours=2))
+        # do
+        schedules = self.lot._get_schedules(t)
+        print('Grafiki:',schedules)
+        # check
+        self.assertEqual(len(schedules), 3, msg='Wrong number of schedules')
