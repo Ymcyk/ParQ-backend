@@ -1,14 +1,18 @@
 from django.test import TestCase
 from django.contrib.auth.models import User
 
+from djroles.models import Role
+from users.models import Driver
 from .models import Badge, Vehicle
 
 class VehicleTest(TestCase):
     def setUp(self):
         self.username = 'jan'
+        Role.objects.create_role(name='Driver')
         self.user = User.objects.create_user(username=self.username)
+        self.driver = Driver.objects.create(user=self.user)
         self.badge = Badge.objects.create()
-        self.vehicle = Vehicle.objects.create(owner=self.user, badge=self.badge,
+        self.vehicle = Vehicle.objects.create(owner=self.driver, badge=self.badge,
                 plate_country='PL', plate_number='ZS123FU')
 
     def test_badge_is_created(self):
@@ -53,7 +57,7 @@ class VehicleTest(TestCase):
         from badges.exceptions import BadgeNotAvailable
         with self.assertRaises(BadgeNotAvailable, msg=('Asigning vehicle to'
             ' assigned badge didn\'t raise Error')):
-            Vehicle.objects.create(owner=self.user, badge=self.badge,
+            Vehicle.objects.create(owner=self.driver, badge=self.badge,
                     plate_country='PL', plate_number='ZS1234F')
 
     def test_badge_deleted_after_vehicle_deletion(self):
