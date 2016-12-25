@@ -30,7 +30,7 @@ class Charge(models.Model):
             default=True)
 
     def __str__(self):
-        return '{}/[] for {}, minute_billing: {}'.format(self.cost, 
+        return '{}/{} for {}, minute_billing: {}'.format(self.cost, 
                 self.minutes, self.duration, self.minute_billing)
 
     def calculate_price(self, time):
@@ -51,14 +51,35 @@ class Schedule(Event):
     charges = models.ManyToManyField(Charge, through='ScheduleCharge')
 
     def calculate_price(self, ticket):
-        period = self._get_effective_dates(ticket)
+        effective_dates = self._get_effective_dates(ticket)
+        time = self._to_minutes(effective_dates[1] - effective_dates[0])
+        charges = list(self.charges.all().order_by('-schedulecharge__order'))
+
+        if not charges:
+            raise Exception('Schedule without charges')
+
+        price = Decimal()
+        while time > 0:
+            charge = charges.pop()
+            if len(charges) == 0 or time <= charge.duration:
+                price += charge.calculate_price(time)
+                break
+            else:
+                price += charge.calculate_price(charge.duration)
+                time -= charge.duration
+        return price
 
     def _get_effective_dates(self, ticket):
         if ticket.start > self.end or ticket.end < self.start:
-            raise Exception('Ticket not in Schedule')
+            raise Exception('Ticket is not in Schedule')
         start = self.start if self.start > ticket.start else ticket.start
         end = self.end if self.end < ticket.end else ticket.end
         return (start, end)
+
+    def _to_minutes(self, time):
+        minutes = time.days * 24 * 60
+        minutes += time.seconds // 60
+        return minutes
 
 class ScheduleCharge(OrderedModel):
     schedule = models.ForeignKey(Schedule)
