@@ -1,5 +1,5 @@
 from django.test import TestCase
-from .models import Charge
+from .models import Charge, Schedule, ScheduleLot
 
 class ChargesTest(TestCase):
     def setUp(self):
@@ -55,3 +55,61 @@ class ChargesTest(TestCase):
         # check
         self.assertEqual(price, ch2.cost * 2, msg='Price not equal cost')
 
+from django.utils import timezone
+from datetime import datetime
+
+class Ticket:
+    def __init__(self, start, end):
+        self.start = start
+        self.end = end
+
+class ScheduleEffectiveDatesTest(TestCase):
+    
+    def setUp(self):
+        self.t1 = Ticket(timezone.make_aware(datetime(2016, 12, 24, 7)), 
+                timezone.make_aware(datetime(2016, 12, 24, 9)))
+        self.t2 = Ticket(timezone.make_aware(datetime(2016, 12, 24, 9)), 
+                timezone.make_aware(datetime(2016, 12, 24, 10)))
+        self.t3 = Ticket(timezone.make_aware(datetime(2016, 12, 24, 16)), 
+                timezone.make_aware(datetime(2016, 12, 24, 18)))
+        self.t4 = Ticket(timezone.make_aware(datetime(2016, 12, 24, 18)), 
+                timezone.make_aware(datetime(2016, 12, 24, 20)))
+        self.sch = Schedule.objects.create(schedule_lot=
+            ScheduleLot.objects.create(name='Strefa A'), start=timezone.make_aware(
+            datetime(2016, 12, 24, 8)), end=timezone.make_aware(
+            datetime(2016, 12, 24, 17))) 
+
+    def test_start_before_end_in_schedule(self):
+        # prepare
+        sch = Schedule.objects.get()
+        # do
+        dates = sch._get_effective_dates(self.t1)
+        # check
+        test = dates[0] == sch.start and dates[1] == self.t1.end
+        self.assertTrue(test)
+
+    def test_start_in_end_in_schedule(self):
+        # prepare
+        sch = Schedule.objects.get()
+        # do
+        dates = sch._get_effective_dates(self.t2)
+        # check
+        test = dates[0] == self.t2.start and dates[1] == self.t2.end
+        self.assertTrue(test)
+
+    def test_start_in_end_after_schedule(self):
+        # prepare
+        sch = Schedule.objects.get()
+        # do
+        dates = sch._get_effective_dates(self.t3)
+        # check
+        test = dates[0] == self.t3.start and dates[1] == sch.end
+        self.assertTrue(test)
+
+    def test_start_after_schedule(self):
+        # prepare
+        sch = Schedule.objects.get()
+        # do
+        # check
+        with self.assertRaises(Exception, msg='Exception not raised'):
+            sch._get_effective_dates(self.t4)
