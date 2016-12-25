@@ -19,12 +19,12 @@ class UsersTest(TestCase):
         self.assertTrue(group == self.officer_group, 
                 msg='Officer with bad group')
 
-    def test_driver_is_created(self):
-        # prepare
-        driver = Driver.objects.create_user(username='test_user')
-        # do
-        group = Role.objects.get_user_role(driver)
-        # check
-        self.assertTrue(group == self.driver_group, 
-                msg='Driver with bad group')
+    #def test_driver_is_created(self):
+    #    # prepare
+    #    driver = Driver.objects.create_user(username='test_user')
+    #    # do
+    #    group = Role.objects.get_user_role(driver)
+    #    # check
+    #    self.assertTrue(group == self.driver_group, 
+    #            msg='Driver with bad group')
 

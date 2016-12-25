@@ -1,52 +1,57 @@
 from django.test import TestCase
-from schedule.models import Event
-from schedule.periods import Period
-from django.utils import timezone
-import datetime
+from .models import Charge
 
-from .models import *
-
-class UsersTest(TestCase):
-
+class ChargesTest(TestCase):
     def setUp(self):
-        self.parking_start = timezone.make_aware(datetime.datetime(2016, 12, 10, 8))
-        self.parking_end = timezone.make_aware(datetime.datetime(2016, 12, 10, 17))
-        self.tariff1 = Tariff.objects.create(cost=1.5, minutes=60)
-        self.schedule_lot1 = ScheduleLot.objects.create(name='Strefa A')
-        self.schedule1 = Schedule.objects.create(start=self.parking_start,
-                end=self.parking_end, schedule_lot=self.schedule_lot1)
-        self.charge1 = Charge.objects.create(tariff=self.tariff1, 
-                duration=datetime.timedelta(minutes=120), schedule=self.schedule1)
-        self.charge2 = Charge.objects.create(tariff=self.tariff1, 
-                duration=datetime.timedelta(minutes=120), schedule=self.schedule1)
-        self.charge3 = Charge.objects.create(tariff=self.tariff1, 
-                duration=datetime.timedelta(minutes=120), schedule=self.schedule1)
+        self.ch1 = Charge.objects.create(cost=2.0, minutes=60, duration=60)
+        self.ch2 = Charge.objects.create(cost=2.0, minutes=60, duration=60,
+                minute_billing=False)
 
-    def test_event_start_in_period(self):
+    def test_full_minutes(self):
         # prepare
-        period_start = timezone.make_aware(datetime.datetime(2016, 12, 10, 7))
-        period_end = timezone.make_aware(datetime.datetime(2016, 12, 10, 9))
-
-        event = Event(start=self.parking_start, end=self.parking_end)
-        period = Period([event], start=period_start, end=period_end)
+        ch1 = Charge.objects.get(id=1)
         # do
-        occr = period.get_occurrences()
-        clssify = period.classify_occurrence(occr[0])
+        price = ch1.calculate_price(ch1.minutes)
         # check
-        self.assertTrue(clssify['class'] == 0, msg='Event did not started in period')
+        self.assertEqual(price, ch1.cost, msg='Price not equal cost')
 
-    def test_event_end_in_period(self):
+    def test_half_minutes(self):
         # prepare
-        period_start = timezone.make_aware(datetime.datetime(2016, 12, 10, 16))
-        period_end = timezone.make_aware(datetime.datetime(2016, 12, 10, 18))
-
-        event = Event(start=self.parking_start, end=self.parking_end)
-        period = Period([event], start=period_start, end=period_end)
+        ch1 = Charge.objects.get(id=1)
         # do
-        occr = period.get_occurrences()
-        clssify = period.classify_occurrence(occr[0])
+        price = ch1.calculate_price(ch1.minutes // 2)
         # check
-        self.assertTrue(clssify['class'] == 3, msg='Event did not ended in period')
- 
-    def test_charges_in_schedule_are_numerated(self):
+        self.assertEqual(ch1.cost / 2, price, msg='Price not equal half cost')
+
+    def test_quarter_minutes(self):
+        # prepare
+        ch1 = Charge.objects.get(id=1)
+        # do
+        price = ch1.calculate_price(ch1.minutes // 4)
+        # check
+        self.assertEqual(ch1.cost / 4, price, msg='Price not equal quarter cost')
+
+    def test_double_minutes(self):
+        # prepare
+        ch1 = Charge.objects.get(id=1)
+        # do
+        price = ch1.calculate_price(ch1.minutes * 2)
+        # check
+        self.assertEqual(ch1.cost * 2, price, msg='Price not equal double cost')
+
+    def test_minute_billing_less_than_minutes(self):
+        # prepare
+        ch2 = Charge.objects.get(id=2)
+        # do
+        price = ch2.calculate_price(ch2.minutes - 1)
+        # check
+        self.assertEqual(price, ch2.cost, msg='Price not equal cost')
+
+    def test_minute_billing_more_than_minutes(self):
+        # prepare
+        ch2 = Charge.objects.get(id=2)
+        # do
+        price = ch2.calculate_price(ch2.minutes + 2)
+        # check
+        self.assertEqual(price, ch2.cost * 2, msg='Price not equal cost')
 

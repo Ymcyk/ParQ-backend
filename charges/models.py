@@ -23,7 +23,7 @@ class Charge(models.Model):
             decimal_places=2
             )
     minutes = models.IntegerField(_('minutes'))
-    duration = models.DurationField(_('duration'),
+    duration = models.IntegerField(_('duration'),
             blank=True
             )
     minute_billing = models.BooleanField(_('minutes'),
@@ -35,8 +35,12 @@ class Charge(models.Model):
 
     def calculate_price(self, time):
         price = Decimal()
-        price += (time // self.minutes) * self.cost
-        price += (Decimal(time % self.minutes) / self.minutes) * self.cost
+        price += Decimal(time // self.minutes) * self.cost
+        rest = (Decimal(time % self.minutes) / self.minutes) * self.cost
+        if not self.minute_billing and rest:
+            price += self.cost
+        else:
+            price += rest
         return price
 
 class Schedule(Event):

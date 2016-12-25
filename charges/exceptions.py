@@ -1,0 +1,2 @@
+class PeriodWithoutSchedule(Exception):
+    pass

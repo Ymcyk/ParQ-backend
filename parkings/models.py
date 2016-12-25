@@ -53,7 +53,3 @@ class Ticket(models.Model):
     def __str__(self):
         return '{}: {}'.format(self.start, self.parking)
 
-    # na razie wersja, gdzie z góry się określa czas postoju
-    #def stop(self):
-    #    self.price = self.parking.schedule_lot.calculate_price(self)
-    #    self.save()
