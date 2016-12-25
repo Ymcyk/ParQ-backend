@@ -1,5 +1,5 @@
 from django.test import TestCase
-from .models import Charge, Schedule, ScheduleLot
+from .models import Charge, Schedule, ScheduleLot, ScheduleCharge
 
 class ChargesTest(TestCase):
     def setUp(self):
@@ -55,8 +55,21 @@ class ChargesTest(TestCase):
         # check
         self.assertEqual(price, ch2.cost * 2, msg='Price not equal cost')
 
+class ScheduleToMinutesTest(TestCase):
+    def setUp(self):
+        self.sch = Schedule(schedule_lot=None, start=None, end=None)
+
+    def test_one_hour(self):
+        # prepare
+        t1 = datetime(2016, 12, 24, 8)
+        t2 = datetime(2016, 12, 24, 9)
+        # do
+        td = self.sch._to_minutes(t2 - t1)
+        # check
+        self.assertEqual(td, 60)
+
 from django.utils import timezone
-from datetime import datetime
+from datetime import datetime, timedelta
 
 class Ticket:
     def __init__(self, start, end):
@@ -113,3 +126,82 @@ class ScheduleEffectiveDatesTest(TestCase):
         # check
         with self.assertRaises(Exception, msg='Exception not raised'):
             sch._get_effective_dates(self.t4)
+
+class ScheduleChargeTest(TestCase):
+    def setUp(self):
+        self.sch = Schedule.objects.create(schedule_lot=
+                ScheduleLot.objects.create(name='Strefa A'), 
+                start=timezone.now(), end=timezone.now())
+        self.cha = []
+        self.cha.append(Charge.objects.create(cost=1, minutes=61, duration=61))
+        self.cha.append(Charge.objects.create(cost=1, minutes=62, duration=62))
+        self.cha.append(Charge.objects.create(cost=1, minutes=63, duration=63))
+        ScheduleCharge.objects.create(schedule=self.sch, charge=self.cha[0])
+        ScheduleCharge.objects.create(schedule=self.sch, charge=self.cha[1])
+        ScheduleCharge.objects.create(schedule=self.sch, charge=self.cha[2])
+
+    def test_charges_in_order(self):
+        # prepare
+        charges = self.sch.charges.all()
+        # do
+        # check
+        for i in range(0, len(self.cha)):
+            self.assertEqual(charges[i], self.cha[i], msg='Wrong order')
+
+    def test_reverse_order(self):
+        # prepare
+        charges = list(self.sch.charges.all().order_by('-schedulecharge__order'))
+        # do
+        # check
+        for charge in self.cha:
+            ch = charges.pop()
+            self.assertEqual(ch, charge, msg='Wrong order')
+
+from decimal import Decimal
+
+class SchedulePriceCalculationTest(TestCase):
+    def setUp(self):
+        self.s_start = timezone.make_aware(datetime(2016, 12, 24, 8))
+        self.s_end = timezone.make_aware(datetime(2016, 12, 24, 17))
+        self.sch = Schedule.objects.create(
+                schedule_lot=ScheduleLot.objects.create(name='Strefa A'),
+                start=self.s_start,
+                end=self.s_end)
+           
+    def charges1(self):
+        ch = Charge.objects.create(cost=1.0, minutes=60, duration=60)
+        ScheduleCharge.objects.create(schedule=self.sch, charge=ch)
+        ch = Charge.objects.create(cost=2.0, minutes=120, duration=60)
+        ScheduleCharge.objects.create(schedule=self.sch, charge=ch)
+        ch = Charge.objects.create(cost=1.0, minutes=60, duration=60)
+
+    def test_ticket_in_one_charge(self):
+        # prepare
+        self.charges1()
+        t = Ticket(start=self.s_start, end=self.s_start + timedelta(minutes=60))
+        # do
+        sch = Schedule.objects.get()
+        price = sch.calculate_price(t)
+        # check
+        self.assertEqual(price, Decimal('1.0'), msg='Price is wrong')
+
+    def test_ticket_in_three_charges(self):
+        # prepare
+        self.charges1()
+        t = Ticket(start=self.s_start + timedelta(hours=1),
+                end=self.s_start + timedelta(hours=3, minutes=30))
+        # do
+        sch = Schedule.objects.get()
+        price = sch.calculate_price(t)
+        # check
+        self.assertEqual(price, Decimal('2.5'), msg='Price is wrong')
+
+    def test_ticket_start_before_end_after(self):
+        # prepare
+        self.charges1()
+        t = Ticket(start=self.s_start - timedelta(minutes=45),
+                end=self.s_end + timedelta(days=1))
+        # do
+        price = self.sch.calculate_price(t)
+        # check
+        self.assertEqual(price, Decimal('9.0'), msg='Price is wrong')
