@@ -50,6 +50,16 @@ class Schedule(Event):
             )
     charges = models.ManyToManyField(Charge, through='ScheduleCharge')
 
+    def calculate_price(self, ticket):
+        period = self._get_effective_dates(ticket)
+
+    def _get_effective_dates(self, ticket):
+        if ticket.start > self.end or ticket.end < self.start:
+            raise Exception('Ticket not in Schedule')
+        start = self.start if self.start > ticket.start else ticket.start
+        end = self.end if self.end < ticket.end else ticket.end
+        return (start, end)
+
 class ScheduleCharge(OrderedModel):
     schedule = models.ForeignKey(Schedule)
     charge = models.ForeignKey(Charge)
