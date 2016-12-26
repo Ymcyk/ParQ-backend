@@ -18,7 +18,7 @@ def assign_driver_to_group(instance, created, **kwargs):
 @receiver(post_save, sender=Officer)
 def assign_officer_to_group(instance, created, **kwargs):
     if created:
-        assign_to_role(Officer, instance)
+        assign_to_role(Officer, instance.user)
 
 @receiver(post_save, sender=User)
 def create_auth_token(sender, instance, created, **kwargs):

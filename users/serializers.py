@@ -6,7 +6,9 @@ from .models import Driver
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('username', 'email')
+        fields = ('id', 'username', 'email', 'password')
+        read_only_fields = ('id',)
+        extra_kwargs = {'password': {'write_only': True}}
 
 class DriverSerializer(serializers.ModelSerializer):
     user = UserSerializer()
@@ -14,6 +16,7 @@ class DriverSerializer(serializers.ModelSerializer):
     class Meta:
         model = Driver
         fields = ('user', 'wallet')
+        read_only_fields = ('wallet',)
 
     def create(self, validated_data):
         user_data = validated_data.pop('user')

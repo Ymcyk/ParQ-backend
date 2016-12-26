@@ -7,12 +7,27 @@ from django.utils.translation import ugettext as _
 
 from .exceptions import NotEnoughMoney
 
-class Officer(User, BaseRole):
-    class Meta:
-        proxy = True
+class Officer(models.Model, BaseRole):
+    user = models.OneToOneField(
+            User,
+            on_delete=models.CASCADE,
+            primary_key=True
+            )
+    position = models.CharField(
+            _('position'),
+            max_length=50,
+            blank=True
+            )
+
+    def __str__(self):
+        return str(self.user)
 
 class Driver(models.Model, BaseRole):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(
+            User, 
+            on_delete=models.CASCADE,
+            primary_key=True
+            )
     wallet = models.DecimalField(
             _('wallet'),
             max_digits=8,
@@ -27,4 +42,7 @@ class Driver(models.Model, BaseRole):
 
     def add_money(self, amount):
         self.wallet += amount
+
+    def __str__(self):
+        return str(self.user)
 

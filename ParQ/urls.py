@@ -18,13 +18,21 @@ from django.contrib import admin
 
 from rest_framework.urlpatterns import format_suffix_patterns
 from rest_framework.authtoken import views
-from users.views import driver_list, driver_detail 
+
+from users.views import register_driver, driver_detail, current_user 
+from badges.views import vehicle_detail, vehicle_list
+from parkings.views import parking_list, ticket_list
 
 urlpatterns = [
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
     url(r'^api-token-auth/', views.obtain_auth_token),
-    url(r'^drivers/$', driver_list),
+    url(r'^register/$', register_driver),
     url(r'^drivers/(?P<pk>[0-9]+)$', driver_detail),
+    url(r'^vehicles/$', vehicle_list),
+    url(r'^vehicles/(?P<pk>[0-9]+)$', vehicle_detail),
+    url(r'^parkings/$', parking_list),
+    url(r'^tickets/$', ticket_list),
+    url(r'^current/$', current_user),
     #url(r'^admin/', admin.site.urls),
 ]
 
@@ -35,3 +43,7 @@ urlpatterns = format_suffix_patterns(urlpatterns)
 
 # żądanie GET
 # curl -i -H "Accept: application/json" "localhost:8000/drivers/"
+
+# dodawania kierowcy
+# curl -H "Content-Type: application/json" -X POST -d '{"user":{"username":"ymcyk", "email":"thepateto@gmail.com", "password":"piotr213243"}}' http://localhost:8000/register/
+

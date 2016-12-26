@@ -41,7 +41,6 @@ class Vehicle(models.Model):
     name = models.CharField(
             _('Name'),
             max_length=50,
-            blank=True,
             )
     plate_country = CountryField(
             _('Plate country'),
