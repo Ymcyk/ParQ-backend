@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
 from badges.models import Vehicle
+from badges.serializers import VehicleSerializer
 from .models import Parking, Ticket
 
 class ParkingSerializer(serializers.ModelSerializer):
@@ -8,6 +9,14 @@ class ParkingSerializer(serializers.ModelSerializer):
         model = Parking
         fields = ('id', 'name', 'description')
         read_only_fields = fields
+
+class TicketResponseSerializer(serializers.ModelSerializer):
+    vehicle = VehicleSerializer()
+    parking = ParkingSerializer()
+
+    class Meta:
+        model = Ticket
+        fields = ('start', 'end', 'vehicle', 'parking', 'price')
 
 class TicketSerializer(serializers.ModelSerializer):
     vehicle = serializers.PrimaryKeyRelatedField(
