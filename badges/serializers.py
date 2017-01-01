@@ -11,11 +11,12 @@ from .models import Badge, Vehicle
 
 class VehicleSerializer(serializers.ModelSerializer):
     owner = serializers.PrimaryKeyRelatedField(
-            queryset=Driver.objects.all()
+            read_only=True,
             )
     badge = serializers.SlugRelatedField(
             slug_field='uuid',
-            queryset=Badge.objects.all()
+            queryset=Badge.objects.all(),
+            required=False,
             )
     plate_number = serializers.CharField(
             max_length=20
@@ -28,7 +29,7 @@ class VehicleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Vehicle
         fields = ('id', 'owner', 'badge', 'name', 'plate_country', 'plate_number')
-        read_only_fields = ('id',)
+        read_only_fields = ('id', 'owner')
 
     def create(self, validated_data):
         vehicle = Vehicle(

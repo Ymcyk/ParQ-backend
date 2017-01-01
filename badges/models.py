@@ -1,4 +1,9 @@
+import os
+
 import uuid
+import qrcode
+
+from django.conf import settings
 from django.db import models, IntegrityError
 from django.utils.translation import ugettext as _
 from users.models import Driver
@@ -15,6 +20,25 @@ class Badge(models.Model):
     @property
     def is_assigned(self):
         return hasattr(self, 'vehicle')
+
+    def path_to_file(self):
+        path = os.path.join(settings.BASE_DIR, 'badges', 'images')
+        return '{0}/{1}.png'.format(path, self.uuid)
+
+    def generate_image(self):
+        qr = qrcode.QRCode(
+            version=4,
+            error_correction=qrcode.constants.ERROR_CORRECT_H,
+            box_size=20,
+            border=4
+            )
+        qr.add_data(self.uuid)
+        path = os.path.join(settings.BASE_DIR, 'badges', 'images')
+        return qr.make_image().save(self.path_to_file())
+
+    def save(self, *args, **kwargs):
+        super(type(self), self).save(*args, **kwargs)
+        self.generate_image()
 
     def __str__(self):
         return str(self.id)
@@ -53,12 +77,6 @@ class Vehicle(models.Model):
             editable=False,
             )
 
-    def save(self, *args, **kwargs):
-        try:
-            super(Vehicle, self).save(*args, **kwargs)
-        except IntegrityError:
-            raise BadgeNotAvailable('This badge is already assigned')
-        
     def __str__(self):
         plate_str = '{}-{}'.format(self.plate_country, self.plate_number)
         return '{} {}'.format(self.name, plate_str) if self.name else plate_str 

@@ -29,6 +29,14 @@ ALLOWED_HOSTS = [
             '192.168.1.20',
         ]
 
+# konfiguracja maila
+
+# EMAIL_USE_TLS = True
+EMAIL_USE_SSL = True
+EMAIL_HOST = 'poczta.o2.pl'
+EMAIL_PORT = 465
+EMAIL_HOST_USER = 'ziel135@o2.pl'
+EMAIL_HOST_PASSWORD = 'Ny@mu78!ter'
 
 # Application definition
 
@@ -39,6 +47,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_extensions',
     'djroles',
     'rest_framework',
     'rest_framework.authtoken',
@@ -53,10 +62,11 @@ INSTALLED_APPS = [
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        #'rest_framework.authentication.BasicAuthentication',
-        #'rest_framework.authentication.SessionAuthentication',
         'rest_framework.authentication.TokenAuthentication',
-                                    )
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
 }
 
 MIDDLEWARE = [

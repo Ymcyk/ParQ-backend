@@ -7,3 +7,5 @@ db.sqlite3
 
 # tymczasowe pliki vim-a
 *.swp
+
+badges/images

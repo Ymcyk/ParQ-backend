@@ -4,9 +4,10 @@ from django.http import Http404
 from django.utils import timezone
 from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from rest_framework.decorators import api_view
+
+from users.models import Driver
 
 from .models import Parking, Ticket
 from .serializers import ParkingSerializer, TicketSerializer, TicketResponseSerializer
@@ -20,8 +21,13 @@ def parking_list(request, format=None):
 
 @api_view(['GET', 'POST'])
 def ticket_list(request, format=None):
+    try:
+        driver = Driver.objects.get(pk=request.user.id)
+    except Driver.DoesNotExist:
+        return Response({'owner':'Only drivers'}, status=status.HTTP_403_FORBIDDEN)
+
     if request.method == 'GET':
-        tickets = Ticket.objects.all()
+        tickets = Ticket.objects.filter(vehicle__owner=driver)
         badge = request.query_params.get('badge', None)
         if badge:
             regex = '{0}{{8}}-{0}{{4}}-{0}{{4}}-{0}{{4}}-{0}{{12}}'.format('[a-f0-9]')
