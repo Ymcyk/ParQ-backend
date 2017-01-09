@@ -23,6 +23,7 @@ from users.views import register_driver, driver_detail, current_user, ParQAuthTo
 from badges.views import vehicle_detail, vehicle_list
 from parkings.views import parking_list, ticket_list
 from paypal.views import payment_list 
+from charges.views import schedule_list
 
 urlpatterns = [
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
@@ -36,6 +37,7 @@ urlpatterns = [
     url(r'^tickets/$', ticket_list),
     url(r'^current/$', current_user),
     url(r'^payments/$', payment_list),
+    url(r'^schedules/$', schedule_list),
     #url(r'^admin/', admin.site.urls),
 ]
 
