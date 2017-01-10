@@ -30,7 +30,7 @@ def vehicle_list(request, format=None):
                 badge = Badge.objects.create()
                 serializer.save(owner=driver, badge=badge)
                 # wysyłanie maila do użytkownika
-                send_badge(request.user.email, badge)
+                # send_badge(request.user.email, badge)
             else:
                 try:
                     print('JESTEM TUTAJ')

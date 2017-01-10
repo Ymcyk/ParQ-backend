@@ -207,14 +207,43 @@ class SchedulePriceCalculationTest(TestCase):
         self.assertEqual(price, Decimal('9.0'), msg='Price is wrong')
 
 from schedule.models import Rule
+from schedule.periods import Day, Period
+
+from datetime import timedelta
 
 class ScheduleLotTest(TestCase):
     def setUp(self):
         self.lot = ScheduleLot.objects.create(name='Strefa A')
         self.rule = Rule.objects.create(frequency='WEEKLY', name='weekly')
-        self.s1_start = timezone.make_aware(datetime(2016, 12, 24, 8))
-        self.s1_end = timezone.make_aware(datetime(2016, 12, 24, 17))
+
+        self.s1_day = timezone.make_aware(datetime(2016, 12, 26))
+        self.s1_start = timezone.make_aware(datetime(2016, 12, 26, 8))
+        self.s1_end = timezone.make_aware(datetime(2016, 12, 26, 17))
         self.sch1 = Schedule.objects.create(start=self.s1_start, end=self.s1_end,
+                schedule_lot=self.lot, rule=self.rule)
+
+        self.s2_day = timezone.make_aware(datetime(2016, 12, 27))
+        self.s2_start = timezone.make_aware(datetime(2016, 12, 27, 8))
+        self.s2_end = timezone.make_aware(datetime(2016, 12, 27, 17))
+        self.sch2 = Schedule.objects.create(start=self.s2_start, end=self.s2_end,
+                schedule_lot=self.lot, rule=self.rule)
+
+        self.s3_day = timezone.make_aware(datetime(2016, 12, 28))
+        self.s3_start = timezone.make_aware(datetime(2016, 12, 28, 8))
+        self.s3_end = timezone.make_aware(datetime(2016, 12, 28, 17))
+        self.sch3 = Schedule.objects.create(start=self.s3_start, end=self.s3_end,
+                schedule_lot=self.lot, rule=self.rule)
+
+        self.s4_day = timezone.make_aware(datetime(2016, 12, 29))
+        self.s4_start = timezone.make_aware(datetime(2016, 12, 29, 8))
+        self.s4_end = timezone.make_aware(datetime(2016, 12, 29, 17))
+        self.sch4 = Schedule.objects.create(start=self.s4_start, end=self.s4_end,
+                schedule_lot=self.lot, rule=self.rule)
+
+        self.s5_day = timezone.make_aware(datetime(2016, 12, 30))
+        self.s5_start = timezone.make_aware(datetime(2016, 12, 30, 8))
+        self.s5_end = timezone.make_aware(datetime(2016, 12, 30, 17))
+        self.sch5 = Schedule.objects.create(start=self.s5_start, end=self.s5_end,
                 schedule_lot=self.lot, rule=self.rule)
 
     def test_get_related_schedules(self):
@@ -222,7 +251,7 @@ class ScheduleLotTest(TestCase):
         # do
         schedules = self.lot.schedule_set.all()
         # check
-        self.assertEqual(len(schedules), 1, msg='Wrong number of schedules')
+        self.assertEqual(len(schedules), 5, msg='Wrong number of schedules')
 
     def test_get_schedule_from_one_day(self):
         # prepare
@@ -264,6 +293,22 @@ class ScheduleLotTest(TestCase):
         schedule = self.lot._get_schedule(t)
         # check
         self.assertEqual(schedule.start, self.s1_start, msg='Wrong schedule')
+
+    def test_weeks_later_day(self):
+        # prepare
+        schedules = Schedule.objects.all()
+        # do
+        occur = Day(schedules, timezone.make_aware(datetime(2017, 1, 11))).get_occurrences()
+        # check
+        self.assertEqual(len(occur), 1, msg='Should be only one schedule in day')
+
+    def test_weeks_later_period(self):
+        # prepare
+        schedules = Schedule.objects.all()
+        # do
+        occurs = Period(schedules, start=(self.s3_start + timedelta(weeks=4)),
+                end=(self.s3_end + timedelta(weeks=4))).get_occurrences()
+        self.assertEqual(len(occurs), 1, msg='Should be only one schedule')
 
 class ScheduleLotPriceCalculationTest(TestCase):
     def setUp(self):

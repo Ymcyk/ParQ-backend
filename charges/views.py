@@ -45,21 +45,5 @@ def schedule_list(request, format=None):
 
 def schedule_for_parking(parking, date):
     schedules = parking.schedule_lot.schedule_set.all()
-    #start = make_aware(datetime(date.year,
-    #                            date.month,
-    #                            date.day,
-    #                            0,
-    #                            0))
-    #end = make_aware(datetime(date.year,
-    #                          date.month,
-    #                          date.day,
-    #                          23,
-    #                          59))
-    #print(start)
-    #print(end)
     occurrences = Day(schedules, date).get_occurrences()
-    for oc in occurrences:
-        print(oc.start)
-        print(oc.end)
-        print()
     return occurrences
