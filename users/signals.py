@@ -1,4 +1,4 @@
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 from djroles.models import Role
 from django.contrib.auth.models import User
@@ -24,3 +24,7 @@ def assign_officer_to_group(instance, created, **kwargs):
 def create_auth_token(sender, instance, created, **kwargs):
     if created:
         Token.objects.create(user=instance)
+
+@receiver(post_delete, sender=Driver)
+def delete_driver_user(instance, **kwargs):
+    instance.user.delete()

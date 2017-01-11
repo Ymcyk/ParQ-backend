@@ -56,6 +56,7 @@ def current_user(request):
 @api_view(['POST'])
 @permission_classes((AllowAny,))
 def register_driver(request, format=None):
+    print(request.data)
     serializer = DriverSerializer(data=request.data)
     if serializer.is_valid():
         serializer.save()

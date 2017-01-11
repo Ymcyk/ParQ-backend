@@ -10,6 +10,7 @@ class UserSerializer(serializers.ModelSerializer):
         read_only_fields = ('id',)
         extra_kwargs = {'password': {'write_only': True}}
 
+
 class DriverSerializer(serializers.ModelSerializer):
     user = UserSerializer()
 
@@ -20,11 +21,11 @@ class DriverSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         user_data = validated_data.pop('user')
-        user = User.objects.create(**user_data)
+        username = user_data['username']
+        email = user_data['email']
+        password = user_data['password']
+        print('username:', username, 'email:', email, 'password:', password)
+        user = User.objects.create_user(username=username, email=email, password=password)
         driver = Driver.objects.create(user=user)
         return driver
-
-    #def update(self, instance, validated_data):
-    #    user_data = validated_data.pop('user')
-    #    user = instance.user
 
