@@ -1,0 +1,2 @@
+class BaseRole(object):
+    pass
