@@ -31,19 +31,11 @@ class ScheduleLot(models.Model):
 
     def get_schedule_for_date(self, date):
         all_schedules = list(self.schedule_set.all())
-        #end = ticket.end
-        #end = make_aware(datetime(end.year, end.month, end.day, 23, 59))
-        #occurrence = Period(all_schedules, 
-        #        ticket.start, end).get_occurrences()[0]
         occurrence = Day(all_schedules, date).get_occurrences()
         if not occurrence:
             raise NoSchedule('No schedule for given date')
         else:
             occurrence = occurrence[0]
-        #schedule = occurrence.event.schedule
-        #schedule.start = occurrence.start
-        #schedule.end = occurrence.end
-        
         return occurrence_to_schedule(occurrence)
 
 class Charge(models.Model):
@@ -88,7 +80,6 @@ class Schedule(Event):
         charges = list(self.charges.all().order_by('-schedulecharge__order'))
 
         if not charges:
-            #raise Exception('Schedule without charges')
             raise ScheduleWithoutCharges('No Charges in given schedule')
 
         price = Decimal()
@@ -104,7 +95,6 @@ class Schedule(Event):
 
     def _get_effective_dates(self, ticket):
         if ticket.start > self.end or ticket.end < self.start:
-            #raise Exception('Ticket is not in Schedule')
             raise TicketNotInSchedule('Ticket time is not in schedule')
         start = self.start if self.start > ticket.start else ticket.start
         end = self.end if self.end < ticket.end else ticket.end

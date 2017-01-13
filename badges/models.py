@@ -54,7 +54,6 @@ class Vehicle(models.Model):
             verbose_name=_('Vehicle\'s owner'),
             on_delete=models.CASCADE,
             editable=False,
-            # limit_choices_to={},
             )
     badge = models.OneToOneField(
             'Badge',

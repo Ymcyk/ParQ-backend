@@ -3,12 +3,6 @@ from rest_framework import serializers
 from users.models import Driver
 from .models import Badge, Vehicle
 
-#class BadgeSerializer(serializers.ModelSerializer):
-#    class Meta:
-#        model = Badge
-#        fields = ('uuid',)
-#        read_only_fields = ('uuid',)
-
 class VehicleSerializer(serializers.ModelSerializer):
     owner = serializers.PrimaryKeyRelatedField(
             read_only=True,

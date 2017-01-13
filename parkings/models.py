@@ -30,8 +30,6 @@ class Ticket(models.Model):
             )
     end = models.DateTimeField(
             _('end'),
-            # blank=True,
-            # null=True
             )
     vehicle = models.ForeignKey(Vehicle)
     parking = models.ForeignKey('Parking')
