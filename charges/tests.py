@@ -48,7 +48,7 @@ class ViewTest(TestCase):
 
     def get_token(self):
         self.client = APIClient()
-        response = self.client.post('/login/', {'username': self.user.username, 'password': self.password, 'role': 'driver'})
+        response = self.client.post('/api/login/', {'username': self.user.username, 'password': self.password, 'role': 'driver'})
         token = response.data['token']
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + token) 
 
@@ -56,7 +56,7 @@ class ViewTest(TestCase):
         # prepare
         self.get_token()
         # do
-        response = self.client.get('/schedules/', {'date': '{0}-{1}-{2}'.format(self.p_start.year, self.p_start.month, self.p_start.day),
+        response = self.client.get('/api/schedules/', {'date': '{0}-{1}-{2}'.format(self.p_start.year, self.p_start.month, self.p_start.day),
                                                  'parking': self.parking.id})
         self.assertEqual(response.status_code, 200, msg='Bad status code')
         self.assertTrue(response.data, msg='Data segment is empty')
@@ -65,7 +65,7 @@ class ViewTest(TestCase):
         # prepare
         self.get_token()
         # do
-        response = self.client.get('/schedules/', {'date': '{0}-{1}-{2}'.format(self.p_start.year, self.p_start.month, self.p_start.day+1),
+        response = self.client.get('/api/schedules/', {'date': '{0}-{1}-{2}'.format(self.p_start.year, self.p_start.month, self.p_start.day+1),
             'parking': self.parking.id})
         # check
         self.assertEqual(response.status_code, 204, msg='Bad status code')

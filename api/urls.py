@@ -8,7 +8,7 @@ from users.views import register_driver, driver_detail, current_user, ParQAuthTo
 from badges.views import VehicleDetail, VehicleList
 from parkings.views import ParkingList, TicketList
 from paypal.views import payment_list 
-from charges.views import schedule_list
+from charges.views import ScheduleList
 
 urlpatterns = [
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
@@ -21,7 +21,7 @@ urlpatterns = [
     url(r'^tickets/$', TicketList.as_view()),
     url(r'^current/$', current_user),
     url(r'^payments/$', payment_list),
-    url(r'^schedules/$', schedule_list),
+    url(r'^schedules/$', ScheduleList.as_view()),
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)
