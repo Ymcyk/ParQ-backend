@@ -25,13 +25,13 @@ class APITest(TestCase):
         self.client = APIClient()
 
     def get_token(self):
-        response = self.client.post('/login/', {'username': self.user.username, 'password': self.password, 'role': 'driver'})
+        response = self.client.post('/api/login/', {'username': self.user.username, 'password': self.password, 'role': 'driver'})
         self.token = response.data['token']
 
     def test_login(self):
         # prepare
         # do
-        response = self.client.post('/login/', {'username': self.user.username, 'password': self.password, 'role': 'driver'})
+        response = self.client.post('/api/login/', {'username': self.user.username, 'password': self.password, 'role': 'driver'})
         self.get_token()
         #check
         self.assertEqual(response.status_code, 200, msg='Bad code')
@@ -39,14 +39,14 @@ class APITest(TestCase):
     def test_bad_login_credentials(self):
         # prepare
         # do
-        response = self.client.post('/login/', {'username': self.user.username + 'x', 'password': self.password, 'role': 'driver'})
+        response = self.client.post('/api/login/', {'username': self.user.username + 'x', 'password': self.password, 'role': 'driver'})
         # check
         self.assertEqual(response.status_code, 400, msg='Bad code')
 
     def test_register(self):
         # prepare
         # do
-        response = self.client.post('/register/', 
+        response = self.client.post('/api/register/', 
                 {'user': {'username': 'piotr', 'password': 'piotr', 'email': 'piotr@piotr.com'}}, format='json')
         # check
         user = User.objects.get(username='piotr')
@@ -98,7 +98,7 @@ class MyParkingsTest(TestCase):
         
     def get_token(self):
         self.client = APIClient()
-        response = self.client.post('/login/', {'username': self.user.username, 'password': self.password, 'role': 'driver'})
+        response = self.client.post('/api/login/', {'username': self.user.username, 'password': self.password, 'role': 'driver'})
         token = response.data['token']
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + token) 
 
@@ -106,7 +106,7 @@ class MyParkingsTest(TestCase):
         # prepare
         self.get_token()
         # do
-        response = self.client.get('/tickets/', {'parking': self.parking.id})
+        response = self.client.get('/api/tickets/', {'parking': self.parking.id})
         # check
         self.assertFalse(response.data, msg='User have ticketes')
         self.assertEqual(response.status_code, 200, msg='Bad code')
@@ -115,7 +115,7 @@ class MyParkingsTest(TestCase):
         # prepare
         self.get_token()
         # do
-        response = self.client.get('/vehicles/')
+        response = self.client.get('/api/vehicles/')
         # check
         self.assertEqual(response.status_code, 200, msg='Bad status code')
         self.assertEqual(len(response.data), 1, msg='Bad amount of cars')
@@ -124,16 +124,24 @@ class MyParkingsTest(TestCase):
         # prepare
         self.get_token()
         # do
-        response = self.client.post('/vehicles/', {'name': 'Maluch', 'plate_number': 'PO11111'}, formt='json')
+        response = self.client.post('/api/vehicles/', {'name': 'Maluch', 'plate_number': 'PO11111'}, formt='json')
         # check
         self.assertEqual(response.status_code, 201, msg='Bad status code')
         self.assertEqual(response.data['name'], 'Maluch', msg='Bad Vehicle name')
+
+    def test_api_delete_vehicle(self):
+        # prepare
+        self.get_token()
+        # do
+        response = self.client.delete('/api/vehicles/{}'.format(self.vehicle.id))
+        # check
+        self.assertEqual(response.status_code, 204, msg='Bad status code')
 
     def test_api_get_parkings(self):
         # prepare
         self.get_token()
         # do
-        response = self.client.get('/parkings/')
+        response = self.client.get('/api/parkings/')
         # check
         self.assertEqual(response.data[0]['name'], 'Strefa A', msg='Bad parking name')
 
@@ -143,7 +151,7 @@ class MyParkingsTest(TestCase):
         start = self.p_start + timedelta(hours=1)
         end = self.p_start + timedelta(hours=2)
         # do
-        response = self.client.post('/tickets/', {'start': start, 'end': end, 'parking': self.parking.id,
+        response = self.client.post('/api/tickets/', {'start': start, 'end': end, 'parking': self.parking.id,
             'vehicle': self.vehicle.id})
         # check
         self.assertEqual(response.status_code, 403, msg='Bad status code')
@@ -156,7 +164,7 @@ class MyParkingsTest(TestCase):
         self.driver.wallet = Decimal('100.0')
         self.driver.save()
         # do
-        response = self.client.post('/tickets/', {'start': start, 'end': end, 'parking': self.parking.id,
+        response = self.client.post('/api/tickets/', {'start': start, 'end': end, 'parking': self.parking.id,
             'vehicle': self.vehicle.id})
         # check
         self.assertEqual(response.status_code, 201, msg='Bad status code')
@@ -170,7 +178,7 @@ class MyParkingsTest(TestCase):
         self.driver.wallet = Decimal('100.0')
         self.driver.save()
         # do
-        response = self.client.post('/tickets/', {'start': start, 'end': end, 'parking': self.parking.id,
+        response = self.client.post('/api/tickets/', {'start': start, 'end': end, 'parking': self.parking.id,
             'vehicle': self.vehicle.id})
         # check
         self.assertEqual(response.status_code, 406, msg='Bad status code')
@@ -215,7 +223,7 @@ class ParkingsTest(TestCase):
                 plate_number='ZS12345', plate_country='PL', name='Golf')
     def get_token(self):
         self.client = APIClient()
-        response = self.client.post('/login/', {'username': self.user.username, 'password': self.password, 'role': 'driver'})
+        response = self.client.post('/api/login/', {'username': self.user.username, 'password': self.password, 'role': 'driver'})
         token = response.data['token']
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + token) 
 
@@ -227,7 +235,7 @@ class ParkingsTest(TestCase):
         self.driver.wallet = Decimal('100.0')
         self.driver.save()
         # do
-        response = self.client.post('/tickets/', {'start': start, 'end': end, 'parking': self.parking.id,
+        response = self.client.post('/api/tickets/', {'start': start, 'end': end, 'parking': self.parking.id,
             'vehicle': self.vehicle.id})
         # check
         self.assertEqual(response.status_code, 201, msg='Bad status code')
