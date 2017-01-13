@@ -33,7 +33,6 @@ def vehicle_list(request, format=None):
                 # send_badge(request.user.email, badge)
             else:
                 try:
-                    print('JESTEM TUTAJ')
                     serializer.save(owner=driver)
                 except IntegrityError:
                     Response({'badge':'Is already used'}, status=status.HTTP_406_NOT_ACCEPTABLE)

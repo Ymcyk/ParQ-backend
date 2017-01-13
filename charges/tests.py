@@ -1,5 +1,75 @@
+from datetime import datetime
+
 from django.test import TestCase
+from django.utils import timezone
+from django.contrib.auth.models import User
+
+from rest_framework.test import APIClient
+
+from schedule.models import Rule
+from djroles.models import Role
+from badges.models import Badge, Vehicle
+from parkings.models import Parking, Ticket
+from users.models import Driver, Officer
+
 from .models import Charge, Schedule, ScheduleLot, ScheduleCharge
+
+class ViewTest(TestCase):
+    def setUp(self):
+        lot = ScheduleLot.objects.create(name='Zwykły taryfikator')
+        self.parking = Parking.objects.create(name='Strefa A', 
+                schedule_lot=lot)
+
+        now = timezone.now()
+        self.p_start = timezone.make_aware(datetime(now.year, now.month, now.day, 0, 1))
+        self.p_end = timezone.make_aware(datetime(now.year, now.month, now.day, 23, 59))
+        print('p_start:', self.p_start)
+        print('p_end:', self.p_end)
+        rule = Rule.objects.create(frequency='WEEKLY', name='weekly')
+        self.schedule = Schedule.objects.create(schedule_lot=lot,
+        start=self.p_start, end=self.p_end, rule=rule)
+
+        self.ch1 = Charge.objects.create(cost=.7, minutes=15, duration=15, minute_billing=False)
+        ScheduleCharge.objects.create(schedule=self.schedule, charge=self.ch1)
+
+        self.ch2 = Charge.objects.create(cost=2.8, minutes=60, duration=60)
+        ScheduleCharge.objects.create(schedule=self.schedule, charge=self.ch2)
+
+        self.ch3 = Charge.objects.create(cost=3.2, minutes=60, duration=60)
+        ScheduleCharge.objects.create(schedule=self.schedule, charge=self.ch3)
+
+        self.password = 'test'
+        self.user = User.objects.create_user(username='Jan', password=self.password, email='test@test.com')
+        role = Role.objects.create_role(name='Driver')
+        self.driver = Driver.objects.create(user=self.user)
+        self.badge = Badge.objects.create()
+        self.vehicle = Vehicle.objects.create(owner=self.driver, badge=self.badge,
+            plate_number='ZS12345', plate_country='PL', name='Golf')
+
+    def get_token(self):
+        self.client = APIClient()
+        response = self.client.post('/login/', {'username': self.user.username, 'password': self.password, 'role': 'driver'})
+        token = response.data['token']
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + token) 
+
+    def test_check_schedule_for_today(self):
+        # prepare
+        self.get_token()
+        # do
+        response = self.client.get('/schedules/', {'date': '{0}-{1}-{2}'.format(self.p_start.year, self.p_start.month, self.p_start.day),
+                                                 'parking': self.parking.id})
+        self.assertEqual(response.status_code, 200, msg='Bad status code')
+        self.assertTrue(response.data, msg='Data segment is empty')
+
+    def test_check_schedule_for_tomorrow(self):
+        # prepare
+        self.get_token()
+        # do
+        response = self.client.get('/schedules/', {'date': '{0}-{1}-{2}'.format(self.p_start.year, self.p_start.month, self.p_start.day+1),
+            'parking': self.parking.id})
+        # check
+        self.assertEqual(response.status_code, 204, msg='Bad status code')
+        self.assertFalse(response.data, msg='Data should be empty')
 
 class ChargesTest(TestCase):
     def setUp(self):
@@ -257,7 +327,7 @@ class ScheduleLotTest(TestCase):
         # prepare
         t = Ticket(self.s1_start, self.s1_start + timedelta(hours=2))
         # do
-        schedule = self.lot._get_schedule(t)
+        schedule = self.lot.get_schedule_for_date(t.start)
         # check
         self.assertEqual(schedule.start, self.s1_start, msg='Wrong schedule')
 
@@ -266,7 +336,7 @@ class ScheduleLotTest(TestCase):
         start = self.s1_start + timedelta(days=7)
         t = Ticket(start, start + timedelta(hours=2))
         # do
-        schedule = self.lot._get_schedule(t)
+        schedule = self.lot.get_schedule_for_date(t.start)
         # check
         self.assertEqual(schedule.start, start, msg='Wrong schedule')
 
@@ -274,7 +344,7 @@ class ScheduleLotTest(TestCase):
         # prepare
         t = Ticket(self.s1_start - timedelta(hours=1), self.s1_end - timedelta(hours=2))
         # do
-        schedule = self.lot._get_schedule(t)
+        schedule = self.lot.get_schedule_for_date(t.start)
         # check
         self.assertEqual(schedule.start, self.s1_start, msg='Wrong schedule')
 
@@ -282,7 +352,7 @@ class ScheduleLotTest(TestCase):
         # prepare
         t = Ticket(self.s1_start + timedelta(hours=2), self.s1_end - timedelta(hours=2))
         # do
-        schedule = self.lot._get_schedule(t)
+        schedule = self.lot.get_schedule_for_date(t.start)
         # check
         self.assertEqual(schedule.start, self.s1_start, msg='Wrong schedule')
 
@@ -290,7 +360,7 @@ class ScheduleLotTest(TestCase):
         # prepare
         t = Ticket(self.s1_start + timedelta(hours=3), self.s1_end + timedelta(hours=2))
         # do
-        schedule = self.lot._get_schedule(t)
+        schedule = self.lot.get_schedule_for_date(t.start)
         # check
         self.assertEqual(schedule.start, self.s1_start, msg='Wrong schedule')
 
