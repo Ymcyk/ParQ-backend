@@ -28,6 +28,7 @@ DEBUG = True
 ALLOWED_HOSTS = [
             '192.168.1.20',
             '82.145.78.153',
+            'pateto.pythonanywhere.com',
         ]
 
 # konfiguracja maila
