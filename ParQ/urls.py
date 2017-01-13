@@ -40,6 +40,7 @@ urlpatterns = [
     #url(r'^schedules/$', schedule_list),
     url(r'^admin/', admin.site.urls),
     url(r'^api/', include('api.urls')),
+    url(r'^', include('pages.urls')),
 ]
 
 #urlpatterns = format_suffix_patterns(urlpatterns)
