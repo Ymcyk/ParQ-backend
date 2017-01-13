@@ -11,6 +11,7 @@ from ordered_model.models import OrderedModel
 from ParQ.utils import occurrence_to_schedule
 
 from .exceptions import *
+from .utils import WEEKDAY
 
 class ScheduleLot(models.Model):
     name = models.CharField(_('name'), 
@@ -113,6 +114,13 @@ class Schedule(Event):
         minutes = time.days * 24 * 60
         minutes += time.seconds // 60
         return minutes
+
+    def __str__(self):
+        return '{0}, start: {1}, end: {2}, rule: {3}'.format(
+                WEEKDAY[self.start.weekday()],
+                self.start,
+                self.end,
+                self.rule.name)
 
 class ScheduleCharge(OrderedModel):
     schedule = models.ForeignKey(Schedule)

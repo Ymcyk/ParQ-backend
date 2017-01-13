@@ -1,3 +1,7 @@
 from django.contrib import admin
 
-# Register your models here.
+from .models import Vehicle, Badge
+
+@admin.register(Badge)
+class BadgeAdmin(admin.ModelAdmin):
+    pass

@@ -41,7 +41,7 @@ class Badge(models.Model):
         self.generate_image()
 
     def __str__(self):
-        return str(self.id)
+        return '{0}, uuid: {1}'.format(self.id, self.uuid)
 
 class Vehicle(models.Model):
     """
