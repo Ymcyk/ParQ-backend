@@ -3,9 +3,9 @@ from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 from rest_framework import status
-from rest_framework.decorators import api_view, permission_classes
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
+from rest_framework.views import APIView
 
 from djroles.models import Role
 from djroles.exceptions import RoleError
@@ -44,35 +44,55 @@ class ParQAuthToken(ObtainAuthToken):
         token, created = Token.objects.get_or_create(user=user)
         return Response({'token': token.key})
 
-@api_view(['GET'])
-def current_user(request):
-    try:
-        driver = Driver.objects.get(pk=request.user.id)
-        serializer = DriverSerializer(driver)
-    except Driver.DoesNotExist:
-        serializer = UserSerializer(request.user)
-    return Response(serializer.data)
-
-@api_view(['POST'])
-@permission_classes((AllowAny,))
-def register_driver(request, format=None):
-    print(request.data)
-    serializer = DriverSerializer(data=request.data)
-    if serializer.is_valid():
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-@api_view(['GET', 'DELETE'])
-def driver_detail(request, pk, format=None):
-    try:
-        driver = Driver.objects.get(pk=pk)
-    except Driver.DoesNotExist:
-        return Response(status=status.HTTP_404_NOT_FOUND)
-
-    if request.method == 'GET':
-        serializer = DriverSerializer(driver)
+class CurrentUser(APIView):
+    def get(self, request):
+        try:
+            driver = Driver.objects.get(pk=request.user.id)
+            serializer = DriverSerializer(driver)
+        except Driver.DoesNotExist:
+            serializer = UserSerializer(request.user)
         return Response(serializer.data)
-    elif request.method == 'DELETE':
-        driver.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+
+#@api_view(['GET'])
+#def current_user(request):
+#    try:
+#        driver = Driver.objects.get(pk=request.user.id)
+#        serializer = DriverSerializer(driver)
+#    except Driver.DoesNotExist:
+#        serializer = UserSerializer(request.user)
+#    return Response(serializer.data)
+
+class RegisterDriver(APIView):
+    permission_classes = (AllowAny,)
+
+    def post(self, request):
+        serializer = DriverSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+#@api_view(['POST'])
+#@permission_classes((AllowAny,))
+#def register_driver(request, format=None):
+#    print(request.data)
+#    serializer = DriverSerializer(data=request.data)
+#    if serializer.is_valid():
+#        serializer.save()
+#        return Response(serializer.data, status=status.HTTP_201_CREATED)
+#    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+#@api_view(['GET', 'DELETE'])
+#def driver_detail(request, pk, format=None):
+#    try:
+#        driver = Driver.objects.get(pk=pk)
+#    except Driver.DoesNotExist:
+#        return Response(status=status.HTTP_404_NOT_FOUND)
+#
+#    if request.method == 'GET':
+#        serializer = DriverSerializer(driver)
+#        return Response(serializer.data)
+#    elif request.method == 'DELETE':
+#        driver.delete()
+#        return Response(status=status.HTTP_204_NO_CONTENT)
