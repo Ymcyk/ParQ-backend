@@ -33,27 +33,13 @@ def schedule_list(request, format=None):
         except Parking.DoesNotExist:
             return Response({'parking': 'Parking with this id does not exist'},
                     status=status.HTTP_406_NOT_ACCEPTABLE)
-        #occurrences = schedule_for_parking(parking, date)
-        #print('occurrences:', occurrences)
         try:
             schedule = parking.schedule_lot.get_schedule_for_date(date)
             serializer = ScheduleSerializer(schedule)
             return Response(serializer.data)
         except NoSchedule:
             return Response(status=status.HTTP_204_NO_CONTENT)
-
-        #if len(occurrences) == 0:
-        #    return Response(status=status.HTTP_204_NO_CONTENT)
-        #else:
-        #    schedule = occurrence_to_schedule(occurrences[0])
-        #    serializer = ScheduleSerializer(schedule)
-        #    return Response(serializer.data)
     else:
         return Response({'params': 'Date and parking params are required'}, 
                 status=status.HTTP_400_BAD_REQUEST)
 
-#def schedule_for_parking(parking, date):
-    #schedules = parking.schedule_lot.schedule_set.all()
-    
-    #occurrences = Day(schedules, date).get_occurrences()
-    #return occurrences

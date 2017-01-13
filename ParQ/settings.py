@@ -59,6 +59,7 @@ INSTALLED_APPS = [
     'charges.apps.ChargesConfig',
     'parkings.apps.ParkingsConfig',
     'paypal.apps.PaypalConfig',
+    'api.apps.ApiConfig',
 ]
 
 REST_FRAMEWORK = {
