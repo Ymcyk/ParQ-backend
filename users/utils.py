@@ -3,9 +3,9 @@ from django.core.mail import send_mail, EmailMessage
 
 #TODO dodać w mailu informacje o pojeździe
 #TODO wysyłanie raczej powinno być asynchroniczne
-def send_badge(recipient, badge):
+def send_badge(recipient, badge, plate_number):
     email = EmailMessage(
-        'ParQ kod QR',
+        'ParQ kod QR dla pojazdu {0}'.format(plate_number),
         'Kod w załączniku',
         settings.EMAIL_HOST_USER,
         [recipient],

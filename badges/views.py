@@ -37,7 +37,7 @@ class VehicleList(APIView):
                 badge = Badge.objects.create()
                 serializer.save(owner=self.driver, badge=badge)
                 # wysyłanie maila do użytkownika
-                # send_badge(request.user.email, badge)
+                send_badge(request.user.email, badge, request.data['plate_number'])
             else:
                 try:
                     serializer.save(owner=self.driver)
