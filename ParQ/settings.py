@@ -31,11 +31,11 @@ ALLOWED_HOSTS = local_settings.ALLOWED_HOSTS
 # konfiguracja maila
 
 # EMAIL_USE_TLS = True
-EMAIL_USE_SSL = True
-EMAIL_HOST = 'poczta.o2.pl'
-EMAIL_PORT = 465
-EMAIL_HOST_USER = 'ziel135@o2.pl'
-EMAIL_HOST_PASSWORD = 'Ny@mu78!ter'
+#EMAIL_USE_SSL = True
+#EMAIL_HOST = 
+#EMAIL_PORT = 465
+#EMAIL_HOST_USER = 
+#EMAIL_HOST_PASSWORD = 
 
 # Application definition
 
