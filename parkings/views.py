@@ -34,25 +34,26 @@ class TicketList(APIView):
     def get(self, request, format=None):
         tickets = Ticket.objects.all()
         badge = request.query_params.get('badge', None)
-        parking = request.query_params.get('parking', None)
+        # parking = request.query_params.get('parking', None)
 
         if Role.has_role(request.user, Officer):
             if not badge:
                 return Response({'params': 'badge is required'}, status=status.HTTP_400_BAD_REQUEST)
             tickets = self.officer_request(tickets, badge)
         elif Role.has_role(request.user, Driver):
-            if not parking:
-                return Response({'params': 'parking is required'}, status=status.HTTP_400_BAD_REQUEST)
-            tickets = self.driver_request(tickets, parking, request.user.id)
+            #if not parking:
+            #    return Response({'params': 'parking is required'}, status=status.HTTP_400_BAD_REQUEST)
+            tickets = self.driver_request(tickets, request.user.id)
         else:
             return Response({'user':'Bad role'}, status=status.HTTP_403_FORBIDDEN)
 
         serializer = TicketResponseSerializer(tickets, many=True)
         return Response(serializer.data)
     
-    def driver_request(self, tickets, parking, user_id):
+    def driver_request(self, tickets, user_id):
         driver = Driver.objects.get(pk=user_id)
-        tickets = tickets.filter(vehicle__owner=driver).filter(parking__id=parking)
+        # tickets = tickets.filter(vehicle__owner=driver).filter(parking__id=parking)
+        tickets = tickets.filter(vehicle__owner=driver)
         now = timezone.now()
         return tickets.filter(end__gte=now)
 
@@ -68,7 +69,6 @@ class TicketList(APIView):
     def post(self, request, format=None):
         if not Role.has_role(request.user, Driver):
             return Response({'user':'Bad role'}, status=status.HTTP_403_FORBIDDEN)
-        # print(request.data)
         serializer = TicketSerializer(data=request.data)
         try:
             if serializer.is_valid():
