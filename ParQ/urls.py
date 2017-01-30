@@ -15,6 +15,7 @@ Including another URLconf
 """
 from django.conf.urls import url, include
 from django.contrib import admin
+from django.contrib.auth import views as auth_views
 
 #from rest_framework.urlpatterns import format_suffix_patterns
 #from rest_framework.authtoken import views
@@ -41,6 +42,8 @@ urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^api/', include('api.urls')),
     url(r'^', include('pages.urls')),
+    url(r'^accounts/login/', auth_views.login, name='login'),
+    url(r'^accounts/logout/', auth_views.logout, {'next_page': '/accounts/login'}, name='logout'),
 ]
 
 #urlpatterns = format_suffix_patterns(urlpatterns)

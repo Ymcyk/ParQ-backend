@@ -39,7 +39,15 @@ class TicketList(APIView):
         if Role.has_role(request.user, Officer):
             if not badge:
                 return Response({'params': 'badge is required'}, status=status.HTTP_400_BAD_REQUEST)
-            tickets = self.officer_request(tickets, badge)
+            #tickets = self.officer_request(tickets, badge)
+            regex = '{0}{{8}}-{0}{{4}}-{0}{{4}}-{0}{{4}}-{0}{{12}}'.format('[a-f0-9]')
+            if not bool(re.search(regex, badge)):
+                return Response('Bad badge id', status=status.HTTP_406_NOT_ACCEPTABLE)
+            tickets = tickets.filter(vehicle__badge__uuid=badge)
+            #print('tickets:', tickets)
+            now = timezone.now()
+            tickets = tickets.filter(end__gte=now).filter(start__lte=now)
+
         elif Role.has_role(request.user, Driver):
             #if not parking:
             #    return Response({'params': 'parking is required'}, status=status.HTTP_400_BAD_REQUEST)

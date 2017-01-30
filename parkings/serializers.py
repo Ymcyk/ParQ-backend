@@ -47,6 +47,7 @@ class TicketSerializer(serializers.ModelSerializer):
             )
     minutes = serializers.IntegerField(
             min_value=1,
+            write_only=True,
             )
 
     class Meta:
@@ -55,7 +56,9 @@ class TicketSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         start = timezone.now()
+        print(validated_data)
         end = start + timedelta(minutes=validated_data['minutes'])
+        print('po end')
         return Ticket.objects.create(
                     start = start,
                     end = end,

@@ -1,0 +1,36 @@
+{% load staticfiles %}
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>{% block title %} - ParQ{% endblock %}</title>
+        <meta charset="UTF-8">
+        <link rel="stylesheet" href="{% static 'bootstrap/css/bootstrap.min.css' %}">
+        <link rel="stylesheet" href="{% static 'bootstrap/css/bootstrap-theme.min.css' %}">
+    </head>
+    <body>
+
+        <nav class="navbar navbar-default">
+          <div class="container-fluid">
+            <div class="navbar-header">
+              <a class="navbar-brand" href="/">ParQ</a>
+            </div>
+            <ul class="nav navbar-nav">
+              <li class="{% if nbar == 'index' %}active{% endif %}"><a href="/">Strona główna</a></li>
+              <li class="{% if nbar == 'myaccount' %}active{% endif %}"><a href="/myaccount/">Moje konto</a></li>
+            </ul>
+            <ul class="nav navbar-nav navbar-right">
+                {% if user.is_authenticated %}
+                    <li><a href="/accounts/logout/"><span class="glyphicon glyphicon-log-out"></span>Wyloguj</a></li>
+                {% endif %}
+            </ul>
+          </div>
+        </nav>
+
+        <div class="container">
+            {% block content %}{% endblock %}
+        </div>
+
+        <script src="{% static 'bootstrap/js/bootstrap.min.js' %}"></script>
+    </body>
+</html>

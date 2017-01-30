@@ -37,7 +37,10 @@ class VehicleList(APIView):
                 badge = Badge.objects.create()
                 serializer.save(owner=self.driver, badge=badge)
                 # wysyłanie maila do użytkownika
-                # send_badge(request.user.email, badge, request.data['plate_number'])
+                try:
+                    send_badge(request.user.email, badge, request.data['plate_number'])
+                except ConnectionRefusedError:
+                    print('Email z kodem QR nie został wysłany. Odmowa serwera')
             else:
                 try:
                     serializer.save(owner=self.driver)
